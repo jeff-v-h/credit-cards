@@ -9,7 +9,20 @@ namespace CreditCards.Tests.Model
     {
         private const int ExpectedLowIncomeThreshhold = 20_000;
         private const int ExpectedHighIncomeThreshhold = 100_000;
-        private const string ValidFrequentFlyerNumber = "012345-A";
+
+        // in xunit.net, each test runs in a new version of the test class
+        // so instead of const, mocks will be used and passed into the constructor
+        //private const string ValidFrequentFlyerNumber = "012345-A";
+        private readonly Mock<IFrequentFlyerNumberValidator> _mockValidator;
+        private readonly CreditCardApplicationEvaluator _sut;
+
+        public CreditCardApplicationEvaluatorShould()
+        {
+            _mockValidator = new Mock<IFrequentFlyerNumberValidator>();
+            _mockValidator.Setup(x => x.IsValid(It.IsAny<string>())).Returns(true);
+
+            _sut = new CreditCardApplicationEvaluator(_mockValidator.Object);
+        }
 
         [Theory]
         [InlineData(ExpectedHighIncomeThreshhold)]
@@ -17,17 +30,13 @@ namespace CreditCards.Tests.Model
         [InlineData(int.MaxValue)]
         public void AcceptAllHighIncomeApplicants(int income)
         {
-            // system under test = sut
-            var sut = new CreditCardApplicationEvaluator(new FrequentFlyerNumberValidator());
-
             var application = new CreditCardApplication
             {
-                GrossAnnualIncome = income,
-                FrequentFlyerNumber = ValidFrequentFlyerNumber
+                GrossAnnualIncome = income
             };
 
             Assert.Equal(CreditCardApplicationDecision.AutoAccepted,
-                sut.Evaluate(application));
+                _sut.Evaluate(application));
         }
 
 
@@ -38,17 +47,14 @@ namespace CreditCards.Tests.Model
         [InlineData(int.MinValue)]
         public void ReferYoungApplicantsWhoAreNotHighIncome(int age)
         {
-            var sut = new CreditCardApplicationEvaluator(new FrequentFlyerNumberValidator());
-
             var application = new CreditCardApplication
             {
                 GrossAnnualIncome = ExpectedHighIncomeThreshhold - 1,
-                Age = age,
-                FrequentFlyerNumber = ValidFrequentFlyerNumber
+                Age = age
             };
 
             Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
-                sut.Evaluate(application));
+                _sut.Evaluate(application));
         }
 
 
@@ -58,17 +64,14 @@ namespace CreditCards.Tests.Model
         [InlineData(ExpectedHighIncomeThreshhold - 1)]
         public void ReferNonYoungApplicantsWhoAreMiddleIncome(int income)
         {
-            var sut = new CreditCardApplicationEvaluator(new FrequentFlyerNumberValidator());
-
             var application = new CreditCardApplication
             {
                 GrossAnnualIncome = income,
-                Age = 21,
-                FrequentFlyerNumber = ValidFrequentFlyerNumber
+                Age = 21
             };
 
             Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
-                sut.Evaluate(application));
+                _sut.Evaluate(application));
         }
 
 
@@ -78,17 +81,14 @@ namespace CreditCards.Tests.Model
         [InlineData(int.MinValue)]
         public void DeclineAllApplicantsWhoAreLowIncome(int income)
         {
-            var sut = new CreditCardApplicationEvaluator(new FrequentFlyerNumberValidator());
-
             var application = new CreditCardApplication
             {
                 GrossAnnualIncome = income,
-                Age = 21,
-                FrequentFlyerNumber = ValidFrequentFlyerNumber
+                Age = 21
             };
 
             Assert.Equal(CreditCardApplicationDecision.AutoDeclined,
-                sut.Evaluate(application));
+                _sut.Evaluate(application));
         }
 
         [Fact]
@@ -105,6 +105,7 @@ namespace CreditCards.Tests.Model
                 sut.Evaluate(application));
         }
 
+        // This method is the same as above but done with moq (package) and local variables
         [Fact]
         public void ReferInvalidFrequentFlyerNumbers_MockValidator()
         {
@@ -119,6 +120,24 @@ namespace CreditCards.Tests.Model
 
             Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
                 sut.Evaluate(application));
+        }
+
+        // This method is also the same as the above 2 but using the class variables
+        [Fact]
+        public void ReferInvalidFrequentFlyerNumbers()
+        {
+            // class _mockvalidator returns true, so here it is overriden to return false
+            _mockValidator.Setup(x => x.IsValid(It.IsAny<string>())).Returns(false);
+
+            var application = new CreditCardApplication();
+
+            Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
+                _sut.Evaluate(application));
+
+            // Allows us o verify a certain method was called on the mock.
+            // Here we want to verify IsValid was called
+            // Expect it only to have been called once.
+            _mockValidator.Verify(x => x.IsValid(It.IsAny<string>()), Times.Once);
         }
     }
 }
