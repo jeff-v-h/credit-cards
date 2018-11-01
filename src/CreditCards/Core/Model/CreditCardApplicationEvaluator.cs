@@ -21,6 +21,11 @@ namespace CreditCards.Core.Model
                 return CreditCardApplicationDecision.AutoAccepted;
             }
 
+            if (!_validator.IsValid(application.FrequentFlyerNumber))
+            {
+                return CreditCardApplicationDecision.ReferredToHuman;
+            }
+
             if (application.Age <= AutoReferralMaxAge)
             {
                 return CreditCardApplicationDecision.ReferredToHuman;

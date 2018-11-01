@@ -7,6 +7,7 @@ namespace CreditCards.Tests.Model
     {
         private const int ExpectedLowIncomeThreshhold = 20_000;
         private const int ExpectedHighIncomeThreshhold = 100_000;
+        private const string ValidFrequentFlyerNumber = "012345-A";
 
         [Theory]
         [InlineData(ExpectedHighIncomeThreshhold)]
@@ -18,7 +19,8 @@ namespace CreditCards.Tests.Model
 
             var application = new CreditCardApplication
             {
-                GrossAnnualIncome = income
+                GrossAnnualIncome = income,
+                FrequentFlyerNumber = ValidFrequentFlyerNumber
             };
 
             Assert.Equal(CreditCardApplicationDecision.AutoAccepted,
@@ -40,7 +42,8 @@ namespace CreditCards.Tests.Model
             var application = new CreditCardApplication
             {
                 GrossAnnualIncome = ExpectedHighIncomeThreshhold - 1,
-                Age = age
+                Age = age,
+                FrequentFlyerNumber = ValidFrequentFlyerNumber
             };
 
             Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
@@ -59,7 +62,8 @@ namespace CreditCards.Tests.Model
             var application = new CreditCardApplication
             {
                 GrossAnnualIncome = income,
-                Age = 21
+                Age = 21,
+                FrequentFlyerNumber = ValidFrequentFlyerNumber
             };
 
             Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
@@ -78,10 +82,25 @@ namespace CreditCards.Tests.Model
             var application = new CreditCardApplication
             {
                 GrossAnnualIncome = income,
-                Age = 21
+                Age = 21,
+                FrequentFlyerNumber = ValidFrequentFlyerNumber
             };
 
             Assert.Equal(CreditCardApplicationDecision.AutoDeclined,
+                sut.Evaluate(application));
+        }
+
+        [Fact]
+        public void ReferInvalidFrequentFlyerNumbers_RealValidator()
+        {
+            var sut = new CreditCardApplicationEvaluator(new FrequentFlyerNumberValidator());
+
+            var application = new CreditCardApplication
+            {
+                FrequentFlyerNumber = "0dm389dn29"
+            };
+
+            Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
                 sut.Evaluate(application));
         }
     }
