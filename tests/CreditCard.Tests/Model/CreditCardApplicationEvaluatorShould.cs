@@ -1,5 +1,7 @@
 ﻿using CreditCards.Core.Model;
+using CreditCards.Core.Interfaces;
 using Xunit;
+using Moq;
 
 namespace CreditCards.Tests.Model
 {
@@ -15,6 +17,7 @@ namespace CreditCards.Tests.Model
         [InlineData(int.MaxValue)]
         public void AcceptAllHighIncomeApplicants(int income)
         {
+            // system under test = sut
             var sut = new CreditCardApplicationEvaluator(new FrequentFlyerNumberValidator());
 
             var application = new CreditCardApplication
@@ -26,8 +29,6 @@ namespace CreditCards.Tests.Model
             Assert.Equal(CreditCardApplicationDecision.AutoAccepted,
                 sut.Evaluate(application));
         }
-
-
 
 
         [Theory]
@@ -99,6 +100,22 @@ namespace CreditCards.Tests.Model
             {
                 FrequentFlyerNumber = "0dm389dn29"
             };
+
+            Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
+                sut.Evaluate(application));
+        }
+
+        [Fact]
+        public void ReferInvalidFrequentFlyerNumbers_MockValidator()
+        {
+            var mockValidator = new Mock<IFrequentFlyerNumberValidator>();
+            // setup mockValidator to always return false (dont need to
+            // manually define a specific invalid evaluator below)
+            mockValidator.Setup(x => x.IsValid(It.IsAny<string>())).Returns(false);
+
+            var sut = new CreditCardApplicationEvaluator(mockValidator.Object);
+
+            var application = new CreditCardApplication();
 
             Assert.Equal(CreditCardApplicationDecision.ReferredToHuman,
                 sut.Evaluate(application));
