@@ -58,6 +58,42 @@ namespace CreditCards.UITests
             Assert.Equal("Please provide a first name", firstErrorMessage.Text);
         }
 
+        [Fact]
+        public void ShouldDeclineLowIncomes()
+        {
+            _driver.Navigate().GoToUrl("http://localhost:44108/Apply");
+
+            IWebElement firstName = _driver.FindElement(By.Name("FirstName"));
+            firstName.SendKeys("Sarah");
+
+            DelayForDemoVideo();
+
+            IWebElement secondName = _driver.FindElement(By.Name("LastName"));
+            secondName.SendKeys("Smith");
+
+            DelayForDemoVideo();
+
+            IWebElement frequentFlyerNum = _driver.FindElement(By.Id("FrequentFlyerNumber"));
+            frequentFlyerNum.SendKeys("012345-A");
+
+            DelayForDemoVideo();
+
+            _driver.FindElement(By.Id("Age")).SendKeys("35");
+
+            DelayForDemoVideo();
+
+            _driver.FindElement(By.Id("GrossAnnualIncome")).SendKeys("10000");
+
+            DelayForDemoVideo();
+
+            _driver.FindElement(By.Id("submitApplication")).Click();
+
+
+            Assert.Equal("Application Complete - CreditCards", _driver.Title);
+            IWebElement applicationDecision = _driver.FindElement(By.Id("decision"));
+            Assert.Equal("AutoDeclined", applicationDecision.Text);
+        }
+
         /// <summary>
         /// Brief delay to slow down browser interactions for
         /// demo video recording purposes

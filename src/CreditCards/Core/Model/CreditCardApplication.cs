@@ -8,5 +8,6 @@
         public int Age { get; set; }
         public decimal GrossAnnualIncome { get; set; }
         public string FrequentFlyerNumber { get; set; }
+        public CreditCardApplicationDecision Decision { get; set; }
     }
 }
