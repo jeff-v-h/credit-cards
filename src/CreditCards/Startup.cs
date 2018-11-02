@@ -26,14 +26,31 @@ namespace CreditCards
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            CurrentEnvironment = env;
         }
 
         public IConfigurationRoot Configuration { get; }
+        public IHostingEnvironment CurrentEnvironment { get; }
 
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // use EF Cores in-memory DB in dev environment.
+            // else use sql server
+            if (CurrentEnvironment.IsDevelopment())
+            {
+                services.AddDbContext<DbContext>(
+                    options => options.UseInMemoryDatabase());
+            }
+            else
+            {
+                services.AddDbContext<AppDbContext>(
+                    options => options.UseSqlServer(
+                        Configuration.GetConnectionString("DefaultConnection")));
+            }
+
             services.AddDbContext<AppDbContext>(
                 options => options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
