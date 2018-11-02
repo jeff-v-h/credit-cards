@@ -39,5 +39,41 @@ namespace CreditCards.IntegrationTests
 
             Assert.Contains("New Credit Card Application", responseString);
         }
+
+        [Fact]
+        public async Task NotAcceptPostedApplicationDetailsWithMissingFrequentFlyerNumber()
+        {
+            var builder = new WebHostBuilder()
+                .UseContentRoot(@"C:\Users\jeff.huang\Documents\education\aspdotnet-core-mvc-testing-fundamentals\testing-fundamentals-project\src\CreditCards")
+                .UseEnvironment("Development")
+                .UseStartup<CreditCards.Startup>()
+                .UseApplicationInsights();
+
+            var server = new TestServer(builder);
+
+            var client = server.CreateClient();
+
+            HttpRequestMessage postRequest =
+                new HttpRequestMessage(HttpMethod.Post, "/Apply");
+
+            var formData = new Dictionary<string, string>
+            {
+                {"FirstName", "Sarah"},
+                {"LastName", "Smith"},
+                {"Age", "18"},
+                {"GrossAnnualIncome", "100000"}
+                // Frequent flyer number omitted to check we can't proceed with the application
+            };
+
+            postRequest.Content = new FormUrlEncodedContent(formData);
+
+            HttpResponseMessage postResponse = await client.SendAsync(postRequest);
+
+            postResponse.EnsureSuccessStatusCode();
+
+            var responseString = await postResponse.Content.ReadAsStringAsync();
+
+            Assert.Contains("Please provide a frequent flyer number", responseString);
+        }
     }
 }
