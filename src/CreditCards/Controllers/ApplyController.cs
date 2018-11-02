@@ -32,6 +32,7 @@ namespace CreditCards.Controllers
             {
                 FirstName = applicationDetails.FirstName,
                 LastName = applicationDetails.LastName,
+                FrequentFlyerNumber = applicationDetails.FrequentFlyerNumber,
                 Age = applicationDetails.Age.Value,
                 GrossAnnualIncome = applicationDetails.GrossAnnualIncome.Value
             };
