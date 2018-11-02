@@ -25,6 +25,10 @@
                         <input asp-for="LastName" class="form-control" />
                     </fieldset>
                     <fieldset class="form-group">
+                        <label asp-for="FrequentFlyerNumber"></label>
+                        <input asp-for="FrequentFlyerNumber" class="form-control" />
+                    </fieldset>
+                    <fieldset class="form-group">
                         <label asp-for="Age"></label>
                         <input asp-for="Age" class="form-control" />
                     </fieldset>
@@ -32,7 +36,7 @@
                         <label asp-for="GrossAnnualIncome"></label>
                         <input asp-for="GrossAnnualIncome" class="form-control" />
                     </fieldset>
-                    <input type="submit" value="Submit Application" class="btn btn-primary" />
+                    <input id="submitApplication" type="submit" value="Submit Application" class="btn btn-primary" />
                 </form>
             </div>
         </div>
